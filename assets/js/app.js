@@ -37,8 +37,60 @@ const ConvertArray = (obj) =>{
 }
 
 
+const Templating = (arr) =>{
 
+    let res = "";
 
+    arr.forEach(b =>{
+
+        res+= `
+          
+                       <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>${b.title}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>${b.content}</p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <button class="btn btn-sm btn-success" onclick = "onEdit(this)">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick = "onRemove(this)">Remove</button>
+                        </div>
+                    </div>
+          
+        `;
+    })
+
+    blogContainer.innerHTML = res;
+}
+
+const CreateBlog = (obj,id) =>{
+
+    cl(obj);
+
+    let card = document.createElement("div");
+
+    card.id = id;
+
+    card.className = "card mb-4";
+
+    card.innerHTML = `
+       
+                        <div class="card-header">
+                            <h5>${obj.title}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>${obj.content}</p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <button class="btn btn-sm btn-success" onclick = "onEdit(this)">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick = "onRemove(this)">Remove</button>
+                        </div>
+    
+    `;
+
+    blogContainer.append(card);
+}
 
 const MakeAPICall = async(apiURL,method,msgBody) =>{
 
@@ -74,7 +126,28 @@ const FetchBlog = async () =>{
 
     let data = ConvertArray(res);
 
-    cl(data);
+    Templating(data);
 }
 
 FetchBlog();
+
+const onSubmit =async eve =>{
+
+    eve.preventDefault();
+
+    let blogObj = {
+
+        title : title.value,
+        content : content.value,
+        userId : userId.value
+    }
+
+    let res  = await MakeAPICall(postURL,"POST",blogObj);
+  
+
+
+    CreateBlog(blogObj,res.name);
+}
+
+
+blogForm.addEventListener("submit",onSubmit);
