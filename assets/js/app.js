@@ -78,10 +78,10 @@ const PatchData = (obj) => {
     updateBtn.classList.remove("d-none");
 }
 
-const UIUpdate = (obj,id) =>{
+const UIUpdate = (obj, id) => {
 
     let card = document.getElementById(id);
-    
+
     card.querySelector(".card-header h5").innerHTML = obj.title;
 
     card.querySelector(".card-body p").innerHTML = obj.content;
@@ -182,7 +182,7 @@ const onEdit = async (ele) => {
     PatchData(res);
 }
 
-const onUpdate = async() => {
+const onUpdate = async () => {
 
     let UPDATE_ID = localStorage.getItem("EDIT_ID");
 
@@ -193,13 +193,35 @@ const onUpdate = async() => {
         title: title.value,
         content: content.value,
         userId: userId.value,
-        id : UPDATE_ID
+        id: UPDATE_ID
     }
 
-    let res = await MakeAPICall(UPDATE_URL,"PATCH",UPDATE_OBJ);
-    
-    UIUpdate(res,UPDATE_ID);
-    
+    let res = await MakeAPICall(UPDATE_URL, "PATCH", UPDATE_OBJ);
+
+    UIUpdate(res, UPDATE_ID);
+
+}
+
+const onRemove = async(ele) => {
+
+    let result = await Swal.fire({
+        title: "Do you want to Delete ?",
+        showCancelButton: true,
+        confirmButtonText: "Delete",
+    })
+    if (result.isConfirmed) {
+
+        let REMOVE_ID = ele.closest(".card").id;
+
+        let REMOVE_URL = `${BaseURL}/blogs/${REMOVE_ID}.json`;
+
+        let res = MakeAPICall(REMOVE_URL, "DELETE", null);
+
+        ele.closest(".card").remove();
+
+    }
+
+
 }
 
 const onSubmit = async eve => {
