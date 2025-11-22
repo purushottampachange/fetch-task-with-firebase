@@ -13,40 +13,42 @@ const spinner = document.getElementById("spinner");
 
 const postURL = "https://post-task-xhr-default-rtdb.firebaseio.com/blogs.json";
 
-const SnackBar = (icon,msg) =>{
+const BaseURL = "https://post-task-xhr-default-rtdb.firebaseio.com/";
+
+const SnackBar = (icon, msg) => {
 
     Swal.fire({
-   
-        title : msg,
-        icon : icon
+
+        title: msg,
+        icon: icon
 
     })
 }
 
-const ConvertArray = (obj) =>{
-   
+const ConvertArray = (obj) => {
+
     let arr = [];
 
     for (const key in obj) {
-         
-        let data = {...obj[key],id:key}
-        
+
+        let data = { ...obj[key], id: key }
+
         arr.push(data);
-    } 
+    }
 
     return arr;
 }
 
 
-const Templating = (arr) =>{
+const Templating = (arr) => {
 
     let res = "";
 
-    arr.forEach(b =>{
+    arr.forEach(b => {
 
-        res+= `
+        res += `
           
-                       <div class="card mb-4">
+                       <div class="card mb-4" id="${b.id}">
                         <div class="card-header">
                             <h5>${b.title}</h5>
                         </div>
@@ -65,7 +67,34 @@ const Templating = (arr) =>{
     blogContainer.innerHTML = res;
 }
 
-const CreateBlog = (obj,id) =>{
+const PatchData = (obj) => {
+
+    title.value = obj.title;
+
+    content.value = obj.content
+
+    submitBtn.classList.add("d-none");
+
+    updateBtn.classList.remove("d-none");
+}
+
+const UIUpdate = (obj,id) =>{
+
+    let card = document.getElementById(id);
+    
+    card.querySelector(".card-header h5").innerHTML = obj.title;
+
+    card.querySelector(".card-body p").innerHTML = obj.content;
+
+    submitBtn.classList.remove("d-none");
+
+    updateBtn.classList.add("d-none");
+
+    blogForm.reset();
+
+}
+
+const CreateBlog = (obj, id) => {
 
     cl(obj);
 
@@ -95,7 +124,7 @@ const CreateBlog = (obj,id) =>{
 
 }
 
-const MakeAPICall = async(apiURL,method,msgBody) =>{
+const MakeAPICall = async (apiURL, method, msgBody) => {
 
     spinner.classList.remove("d-none");
 
@@ -103,35 +132,35 @@ const MakeAPICall = async(apiURL,method,msgBody) =>{
 
     let confiObj = {
 
-        method : method,
-        body : msgBody,
-        headers :{
+        method: method,
+        body: msgBody,
+        headers: {
 
-            "auth" : "token from local storage",
-            "content-type" : "application/json"
+            "auth": "token from local storage",
+            "content-type": "application/json"
         }
     }
 
-    try{
+    try {
 
-        let res = await fetch(apiURL,confiObj);
+        let res = await fetch(apiURL, confiObj);
 
         return res.json();
     }
-    catch(err){
-    
-        SnackBar("error",err);
-        
+    catch (err) {
+
+        SnackBar("error", err);
+
     }
-    finally{
+    finally {
 
         spinner.classList.add("d-none");
     }
 }
 
-const FetchBlog = async () =>{   
+const FetchBlog = async () => {
 
-    let res = await MakeAPICall(postURL,"GET",null);
+    let res = await MakeAPICall(postURL, "GET", null);
 
     let data = ConvertArray(res);
 
@@ -140,23 +169,57 @@ const FetchBlog = async () =>{
 
 FetchBlog();
 
-const onSubmit =async eve =>{
+const onEdit = async (ele) => {
+
+    let EDIT_ID = ele.closest(".card").id;
+
+    localStorage.setItem("EDIT_ID", EDIT_ID);
+
+    let EDIT_URL = `${BaseURL}/blogs/${EDIT_ID}.json`;
+
+    let res = await MakeAPICall(EDIT_URL, "GET", null);
+
+    PatchData(res);
+}
+
+const onUpdate = async() => {
+
+    let UPDATE_ID = localStorage.getItem("EDIT_ID");
+
+    let UPDATE_URL = `${BaseURL}/blogs/${UPDATE_ID}.json`;
+
+    let UPDATE_OBJ = {
+
+        title: title.value,
+        content: content.value,
+        userId: userId.value,
+        id : UPDATE_ID
+    }
+
+    let res = await MakeAPICall(UPDATE_URL,"PATCH",UPDATE_OBJ);
+    
+    UIUpdate(res,UPDATE_ID);
+    
+}
+
+const onSubmit = async eve => {
 
     eve.preventDefault();
 
     let blogObj = {
 
-        title : title.value,
-        content : content.value,
-        userId : userId.value
+        title: title.value,
+        content: content.value,
+        userId: userId.value,
     }
 
-    let res  = await MakeAPICall(postURL,"POST",blogObj);
-  
+    let res = await MakeAPICall(postURL, "POST", blogObj);
 
 
-    CreateBlog(blogObj,res.name);
+
+    CreateBlog(blogObj, res.name);
 }
 
 
-blogForm.addEventListener("submit",onSubmit);
+blogForm.addEventListener("submit", onSubmit);
+updateBtn.addEventListener("click", onUpdate);
