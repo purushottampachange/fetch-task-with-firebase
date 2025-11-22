@@ -9,6 +9,7 @@ const userId = document.getElementById("userId");
 const submitBtn = document.getElementById("submitBtn");
 const updateBtn = document.getElementById("updateBtn");
 const blogContainer = document.getElementById("blogContainer");
+const spinner = document.getElementById("spinner");
 
 const postURL = "https://post-task-xhr-default-rtdb.firebaseio.com/blogs.json";
 
@@ -90,9 +91,13 @@ const CreateBlog = (obj,id) =>{
     `;
 
     blogContainer.append(card);
+    blogForm.reset();
+
 }
 
 const MakeAPICall = async(apiURL,method,msgBody) =>{
+
+    spinner.classList.remove("d-none");
 
     msgBody = msgBody ? JSON.stringify(msgBody) : null;
 
@@ -117,6 +122,10 @@ const MakeAPICall = async(apiURL,method,msgBody) =>{
     
         SnackBar("error",err);
         
+    }
+    finally{
+
+        spinner.classList.add("d-none");
     }
 }
 
